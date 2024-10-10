@@ -1,6 +1,7 @@
 ﻿namespace Modul3_Classes_Struct_Enums.DBContext
 {
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Options;
     using Modul3_Classes_Struct_Enums.Models;
     using Modul3_Classes_Struct_Enums.Models.DboModels;
 
@@ -15,12 +16,8 @@
         /// <param name="dbContextOptionsBuilder"></param>
         protected override void OnConfiguring(DbContextOptionsBuilder dbContextOptionsBuilder)
         {
-            var connectionString = Configuration.GetConnectionString("DefaultConnection");
-            dbContextOptionsBuilder.UseSqlServer(connectionString);
+            dbContextOptionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=MyAppDb;Trusted_Connection=True;");
         }
-       
-
-
 
         /// <summary>
         /// Use to create indexes, releations, foreign keys
