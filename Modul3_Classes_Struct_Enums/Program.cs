@@ -8,11 +8,14 @@
     using Serilog;
     using System.IO;
     using System.IO.Pipes;
+    using System.Net;
+    using System.Net.Http.Headers;
     using System.Text.Json;
+    using System.Text;
 
     internal class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
              Log.Logger = new LoggerConfiguration()
                   .WriteTo.Console()
@@ -21,44 +24,39 @@
 
             IApiService apiService = new ApiService();
 
+            string token = "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";
+            
             try
             {
-                AddAppContext context = new AddAppContext();
+                HttpClient client = new HttpClient();
 
-                //DboUser user = new DboUser
-                //{
-                //    Name = "Rade",
-                //    UserName = "Rade_Vig"
-                //};
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("request");
 
-                //context.DboUser.Add(user);
-                List<DboUser> usersToBeUpdated = context.DboUser.Where(x=>x.UserDescription == "").ToList();
+                byte[] authToken = Encoding.ASCII.GetBytes($"{token}");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(authToken));
 
-                foreach (DboUser user in usersToBeUpdated)
+
+                var response = await client.GetAsync("https://api.github.com/user/emails");
+
+                string jsonContent = "{ \"name\": \"test\", \"description\": \"test-description\", \"private\": false }";
+
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                var postResponse = await client.PostAsync("https://api.github.com/user/repos", content);
+
+
+                if (response.IsSuccessStatusCode)
                 {
-                    user.UserDescription = "test";
-
-                    context.DboUser.Update(user);
+                    var test = response.Content.ReadAsStringAsync().Result;
                 }
-
-                context.SaveChanges();
-
-                //DboPost dboPost = new DboPost
-                //{
-                //    UserId = 10,
-                //    Title = "Test",
-                //};
-
-                //context.DboPost.Add(dboPost);
-                //context.SaveChanges();
-
-
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                Console.WriteLine($"Exception {ex}");
+
+                Console.WriteLine(ex);
             }
-           
+
+
         }
       
     }
